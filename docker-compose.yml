@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+  gait_app:
+    platform: linux/amd64
+    build:
+      context: ./gait_app/
+      dockerfile: Dockerfile
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL}
+      PYTHONIOENCODING: utf-8
+    env_file:
+      - .env
+    volumes:
+      - ./gait_app:/app
+      - ./data/:/data
+    networks:
+      - gait_network
+    ports:
+      - 80:80
+
+networks:
+  gait_network:

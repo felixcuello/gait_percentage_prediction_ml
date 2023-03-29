@@ -1,4 +1,3 @@
-#!/Users/nico/Desktop/GaitUP - UP/np.py
 import numpy as np
 
 # carga data

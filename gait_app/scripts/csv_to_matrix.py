@@ -2,7 +2,7 @@ import numpy as np
 
 # carga data
 
-data = np.genfromtxt('ShaAng_W50.csv', delimiter=',')[1:]
+data = np.genfromtxt('/data/orig_ShaAng_W50.csv', delimiter=',')[1:]
 matrix = np.zeros((2100, 2), dtype=float) 
 
 # Iteración 
@@ -17,6 +17,8 @@ for i in range(2100):
         col += 1
         row = 0
 
+
+import ipdb; ipdb.set_trace()
 # seteo decimales para revisar
 #np.set_printoptions(precision=15)
 

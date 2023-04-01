@@ -53,4 +53,4 @@ for i in range(2100):
         col += 1
         row = 0
 
-os.remove(csv_filename)  #borro csv temporal
+# os.remove(csv_filename)  #borro csv temporal

@@ -68,7 +68,4 @@ bothDF = pd.concat([shankDF, thighDF], axis=1)
 
 bothDF.to_csv('melted_dataset.csv', index=False)
 
-X = bothDF[['ShankAngles','ShankVelocity','ShankAngularVelocity','ShankIntegral','ThighAngles','ThighVelocity','ThighAngularVelocity','ThighIntegral']]
-y = bothDF['gait_percentage']
 
-bothDF.to_csv('merged_dataset.csv', index=False)

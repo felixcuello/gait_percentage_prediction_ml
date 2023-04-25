@@ -73,6 +73,24 @@ bothDF = pd.concat([shankDF, thighDF], axis=1)
 
 #bothDF.to_csv('melted_dataset.csv', index=False)
 
+# ------------------------------------------------------------------
+#   Add Data Agumentation
+# ------------------------------------------------------------------
+from data_augmentation import TimeShift
+from data_augmentation import NoiseInjection
+from data_augmentation import Scaling
+
+ts = TimeShift()
+ni = NoiseInjection()
+sc = Scaling()
+# bothDF = ts.process(bothDF)
+# bothDF = ni.process(bothDF)
+# bothDF = sc.process(bothDF)
+# import ipdb; ipdb.set_trace()
+
+# ------------------------------------------------------------------
+
+
 X = bothDF[['ShankAngles','ShankVelocity','ShankAngularVelocity','ShankIntegral','ThighAngles','ThighVelocity','ThighAngularVelocity','ThighIntegral']]
 y = bothDF['gait_percentage']
 bothDF.to_csv('merged_dataset.csv', index=False)
@@ -101,8 +119,8 @@ train_rmse = np.sqrt(MSE(train_y, train_pred))
 test_pred = xgb_r.predict(test_X)
 test_rmse = np.sqrt(MSE(test_y, test_pred))
 
-print(train_rmse)
-print(test_rmse)
+print(f"train_rmse => {train_rmse}")
+print(f"test_rmse  => {test_rmse}")
 
 # Create a DataFrame with the predicted and original values for ShankAngles and ThighAngles
 df = pd.DataFrame({'test_y': test_y, 'pred': pred, 'ShankAngles': test_X['ShankAngles'], 'ThighAngles': test_X['ThighAngles']})

@@ -4,9 +4,9 @@ from mat_to_csv import MatToCsv
 import xgboost as xg
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error as MSE
+from sklearn.metrics import r2_score
 import matplotlib.pyplot as plt
-
-
+import logging
 
 def calculate_angular_velocity(angles, delta_t):
     return np.concatenate(([np.nan], np.diff(angles) / delta_t))
@@ -76,28 +76,46 @@ bothDF = pd.concat([shankDF, thighDF], axis=1)
 # ------------------------------------------------------------------
 #   Add Data Agumentation
 # ------------------------------------------------------------------
-from data_augmentation import TimeShift
-from data_augmentation import NoiseInjection
-from data_augmentation import Scaling
+augment_data = True
 
-ts = TimeShift()
-ni = NoiseInjection()
-sc = Scaling()
-# bothDF = ts.process(bothDF)
-# bothDF = ni.process(bothDF)
-# bothDF = sc.process(bothDF)
-# import ipdb; ipdb.set_trace()
+if augment_data:
+    # from data_augmentation import TimeShift [DOES NOT WORK]
+    # ts = TimeShift()
+    # bothDF = ts.process(bothDF)
+
+    from data_augmentation import Interpolation
+    i = Interpolation()
+    bothDF = i.process(bothDF)
+
+    from data_augmentation import NoiseInjection
+    ni = NoiseInjection()
+    bothDF = ni.process(bothDF, noise_variability=3)
+    bothDF = ni.process(bothDF, noise_variability=5)
+
+    from data_augmentation import Scaling
+    sc = Scaling()
+    bothDF = sc.process(bothDF, scale_percent=10)
+    bothDF = sc.process(bothDF, scale_percent=-10)
 
 # ------------------------------------------------------------------
 
 
-X = bothDF[['ShankAngles','ShankVelocity','ShankAngularVelocity','ShankIntegral','ThighAngles','ThighVelocity','ThighAngularVelocity','ThighIntegral']]
+# X = bothDF[['ShankAngles','ShankVelocity','ShankAngularVelocity','ShankIntegral','ThighAngles','ThighVelocity','ThighAngularVelocity','ThighIntegral']]
+X = bothDF[['ShankAngles','ShankVelocity','ShankAngularVelocity','ThighAngles','ThighVelocity','ThighAngularVelocity']]
 y = bothDF['gait_percentage']
 bothDF.to_csv('merged_dataset.csv', index=False)
 
-# Splitting
-train_X, test_X, train_y, test_y = train_test_split(X, y,
-                                                    test_size=0.3, random_state=123)
+#  In case we're augmenting the data, we will use the "real" data as the test set and
+#  the augmented data as the training set
+if augment_data:
+    test_X = X.iloc[0:6299]
+    test_y = y.iloc[0:6299]
+    train_X = X.iloc[6300:]
+    train_y = y.iloc[6300:]
+else:
+    # Splitting the whole dataset
+    train_X, test_X, train_y, test_y = train_test_split(X, y, test_size=0.3, random_state=123)
+
 
 # Instantiation
 xgb_r = xg.XGBRegressor(objective='reg:gamma',
@@ -114,11 +132,15 @@ rmse = np.sqrt(MSE(test_y, pred))
 # Training RMSE
 train_pred = xgb_r.predict(train_X)
 train_rmse = np.sqrt(MSE(train_y, train_pred))
+train_r2 = r2_score(train_y, train_pred)
 
 # Test RMSE
 test_pred = xgb_r.predict(test_X)
 test_rmse = np.sqrt(MSE(test_y, test_pred))
+test_r2 = r2_score(test_y, test_pred)
 
+print(f"train r2   => {train_r2}")
+print(f"test  r2   => {test_r2}")
 print(f"train_rmse => {train_rmse}")
 print(f"test_rmse  => {test_rmse}")
 
